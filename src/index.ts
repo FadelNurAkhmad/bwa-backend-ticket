@@ -2,11 +2,15 @@ import express, { type Express, type Request, type Response } from "express";
 import connectDB from "./utils/database";
 import dotenv from "dotenv";
 import adminRoutes from "./routes/adminRoutes";
+import bodyParser from "body-parser";
 
 dotenv.config();
 
 const app: Express = express();
 const port = process.env.PORT;
+
+// menggunakan middleware pakai app.use dan bersifat sinkronus
+app.use(bodyParser.json()); // <- parsing data dari API ke JSON
 
 connectDB();
 
