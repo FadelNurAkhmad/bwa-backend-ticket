@@ -2,12 +2,14 @@ import type { NextFunction, Request, Response } from "express";
 import type z from "zod";
 import { ZodError } from "zod";
 
+// schema: z.AnyZodObject	Membatasi parameter hanya skema Zod bertipe objek
 export const validateRequest =
   (schema: z.AnyZodObject) =>
   async (req: Request, res: Response, next: NextFunction) => {
     try {
+      // validasi req.body sesuai zod schema
       schema.parse(req.body);
-      next();
+      next(); // lanjut ke controller
     } catch (error) {
       if (error instanceof ZodError) {
         const errorMessages = error.issues.map((err) => err.message);
