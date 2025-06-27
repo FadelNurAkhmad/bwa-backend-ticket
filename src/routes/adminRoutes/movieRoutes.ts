@@ -1,6 +1,10 @@
 import express from "express";
 import multer from "multer"; // Middleware upload file
-import { createMovie, getMovies } from "../../controllers/movieController";
+import {
+  createMovie,
+  getMovies,
+  updateMovie,
+} from "../../controllers/movieController";
 import { imageFilter, thumbnailStorage } from "../../utils/multer";
 
 // Inisialisasi Middleware Multer
@@ -12,5 +16,6 @@ const movieRoutes = express.Router();
 
 movieRoutes.get("/movies", getMovies);
 movieRoutes.post("/movies", upload.single("thumbnail"), createMovie); // Artinya: hanya menerima 1 file dengan field name thumbnail
+movieRoutes.put("/movies/:id", upload.single("thumbnail"), updateMovie);
 
 export default movieRoutes;
