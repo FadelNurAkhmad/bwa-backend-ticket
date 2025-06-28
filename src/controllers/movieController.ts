@@ -35,6 +35,35 @@ export const getMovies = async (req: Request, res: Response) => {
   }
 };
 
+export const getMovieDetail = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    const movie = await Movie.findById(id)
+      .populate({
+        path: "genre",
+        select: "name",
+      })
+      .populate({
+        path: "theaters",
+        select: "name",
+      });
+
+    return res.json({
+      data: movie,
+      message: "Success get data",
+      status: "Success",
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      message: "Failed to get data",
+      data: null,
+      status: "failed",
+    });
+  }
+};
+
 export const createMovie = async (req: Request, res: Response) => {
   try {
     // Menerima file thumbnail (req.file)
@@ -214,6 +243,62 @@ export const updateMovie = async (req: Request, res: Response) => {
     console.log(error);
     return res.status(500).json({
       message: "Failed to update data",
+      data: null,
+      status: "failed",
+    });
+  }
+};
+
+export const deleteMovie = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    const movie = await Movie.findById(id);
+
+    if (!movie) {
+      return res.status(400).json({
+        message: "Data movie not found",
+        status: "failed",
+        data: null,
+      });
+    }
+
+    const dirname = path.resolve();
+    const filepath = path.join(
+      dirname,
+      "public/uploads/thumbnails",
+      movie.thumbnail ?? ""
+    );
+
+    if (fs.existsSync(filepath)) {
+      fs.unlinkSync(filepath);
+    }
+
+    await Genre.findByIdAndUpdate(movie.genre, {
+      $pull: {
+        movies: movie._id, // hapus ID movie dari array genre.movies
+      },
+    });
+
+    for (const theater of movie.theaters) {
+      await Theater.findByIdAndUpdate(theater._id, {
+        $pull: {
+          movies: theater._id, // hapus ID movie dari array theater.movies
+        },
+      });
+    }
+
+    await Movie.findByIdAndDelete(id);
+
+    return res.json({
+      status: "success",
+      data: movie,
+      message: "Success delete data",
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      message: "Failed to delete data",
       data: null,
       status: "failed",
     });
