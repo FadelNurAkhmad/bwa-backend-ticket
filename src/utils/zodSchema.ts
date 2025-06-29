@@ -27,3 +27,10 @@ export const movieSchema = z
     bonus: z.string().optional(),
   })
   .strict();
+
+export const authSchema = z.object({
+  name: z.string().min(5),
+  email: z.string().email(),
+  password: z.string().min(5),
+  role: z.enum(["admin", "customer"]),
+});
