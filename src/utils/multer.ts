@@ -20,7 +20,7 @@ export const thumbnailStorage = (path = "public/uploads/thumbnails") =>
       const filename = `${file.fieldname}-${uniqueSuffix}.${
         file.mimetype.split("/")[1]
       }`;
-      cb(null, filename);
+      cb(null, filename); // → hasil filename disimpan di req.file.filename
     },
   });
 
