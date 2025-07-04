@@ -2,6 +2,7 @@ import type { Request, Response } from "express";
 import Movie from "../models/Movie";
 import Genre from "../models/Genre";
 import Transaction from "../models/Transaction";
+import Theater from "../models/Theater";
 
 export const getMovies = async (req: Request, res: Response) => {
   try {
@@ -151,6 +152,100 @@ export const getAvailableSeats = async (req: Request, res: Response) => {
       data: seats,
       message: "Success get data",
       status: "Success",
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      message: "Failed to get data",
+      data: null,
+      status: "failed",
+    });
+  }
+};
+
+export const getMoviesFilter = async (req: Request, res: Response) => {
+  try {
+    const { genreId } = req.params; // genreId dari parameter URL (misal: /movies/filter/123)
+    const { city, theaters, availbility } = req.query; // ✅ Diambil dari URL query: ?city=Jakarta&theaters=abc&availbility=true
+
+    let filterQuery: any = {}; // 👉 Menampung kriteria pencarian yang akan dikirim ke MongoDB
+
+    // Menambahkan filter untuk mencari film dengan genre tertentu.
+    if (genreId) {
+      filterQuery = {
+        ...filterQuery, // Dengan ...filterQuery, kita mempertahankan semua filter yang sudah ada
+        genre: genreId, // 📌 Kolom `genre` dari koleksi Movie dihubungkan ke _id Genre
+      };
+    }
+
+    // menampilkan film yang ditayangkan di kota tertentu berdasarkan theater.city
+    if (city) {
+      const theaters_lists = await Theater.find({
+        city: city, // 📌 Cari semua bioskop (`Theater`) yang berada di kota tertentu
+      });
+
+      const theaterIds = theaters_lists.map((the) => the.id); // 👉 Ambil semua _id bioskop dari hasil pencarian
+
+      filterQuery = {
+        ...filterQuery,
+        theaters: {
+          $in: [...theaterIds], // 📌 Cari film yang ditayangkan di salah satu bioskop tersebut
+        },
+      };
+    }
+
+    // ambil dari req.query.theaters bisa berupa: satu string atau array string[]
+    if (theaters) {
+      // Jika dikirim sebagai satu string (?theaters=abc), theaters tetap akan dianggap array tunggal.
+      const theaterIds2 = theaters as string[]; // ✅ Pastikan theaters dalam bentuk array string
+
+      filterQuery = {
+        ...filterQuery,
+        theaters: {
+          $in: [...(filterQuery?.theaters.$in ?? []), theaterIds2],
+          // Mengecek apakah sebelumnya sudah ada filter theaters
+          // Jika ada (misal dari filter city sebelumnya), kita ambil nilai $in tersebut
+          // Jika belum ada, pakai array kosong [] sebagai callback
+          // Gunakan spread operator ... untuk menggabungkan array dengan theaterIds2
+        },
+      };
+    }
+
+    // Hanya tampilkan film yang masih tersedia (misalnya belum penuh atau masih tayang).
+    if (availbility === "true") {
+      filterQuery = {
+        ...filterQuery,
+        available: true, // 📌 Filter berdasarkan field boolean `available` di Movie
+      };
+    }
+
+    const data = await Movie.find({
+      ...filterQuery, // ✅ Filter final dikirim ke MongoDB
+    })
+      .select("title genre thumbnail") // ✅ Ambil hanya field penting (hemat bandwidth)
+      .populate({
+        path: "genre", // 📌 Hubungkan field genre (ObjectId) ke data Genre
+        select: "name", // ✅ Ambil hanya nama genre
+      });
+
+    const allData = await Movie.find()
+      .select("title genre theaters thumbnail")
+      .populate({
+        path: "genre", // 👉 Join ke koleksi Genre
+        select: "name",
+      })
+      .populate({
+        path: "theaters", // 👉 Join ke koleksi Theater
+        select: "city", // ✅ Ambil hanya field city
+      });
+
+    return res.json({
+      status: true,
+      message: "success get data",
+      data: {
+        filteredMovies: data, // 🎯 Film hasil filter dari user
+        allMovies: allData, // 📦 Semua film tanpa filter (untuk fallback atau referensi)
+      },
     });
   } catch (error) {
     console.log(error);
