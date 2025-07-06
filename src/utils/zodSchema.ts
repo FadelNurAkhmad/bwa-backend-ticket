@@ -34,3 +34,8 @@ export const authSchema = z.object({
   password: z.string().min(5),
   role: z.enum(["admin", "customer"]),
 });
+
+// Menggunakan library Zod (z) untuk validasi schema.
+export const topupSchema = z.object({
+  balance: z.number().min(1000), // Hanya menerima balance minimal 1000 rupiah.
+});
