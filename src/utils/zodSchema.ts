@@ -8,6 +8,7 @@ export const genreSchema = z
   })
   .strict();
 // strict : tidak boleh valiadsi selain name
+// kalau ada valiadsi atau request selain name maka error
 
 export const theaterSchema = z
   .object({
@@ -39,3 +40,16 @@ export const authSchema = z.object({
 export const topupSchema = z.object({
   balance: z.number().min(1000), // Hanya menerima balance minimal 1000 rupiah.
 });
+
+export const transactionSchema = z
+  .object({
+    subtotal: z.number(),
+    total: z.number(),
+    bookingFee: z.number(),
+    tax: z.number(),
+    movieId: z.string(),
+    theaterId: z.string(),
+    seats: z.array(z.string()),
+    date: z.string(),
+  })
+  .strict();

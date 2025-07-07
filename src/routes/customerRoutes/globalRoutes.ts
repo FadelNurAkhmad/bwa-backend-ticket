@@ -1,3 +1,4 @@
+import { validateRequest } from "./../../middlewares/validateRequest";
 import express from "express";
 import {
   getAvailableSeats,
@@ -6,6 +7,12 @@ import {
   getMovies,
   getMoviesFilter,
 } from "../../controllers/globalController";
+import { transactionSchema } from "../../utils/zodSchema";
+import {
+  getOrderDetail,
+  getOrders,
+  transactionTicket,
+} from "../../controllers/ticketController";
 
 const globalroutes = express.Router();
 
@@ -14,5 +21,12 @@ globalroutes.get("/genres", getGenre);
 globalroutes.get("/movies/:id", getMovieDetail);
 globalroutes.get("/check-seats/:movieId", getAvailableSeats);
 globalroutes.get("/browse-movies/:genreId", getMoviesFilter);
+globalroutes.post(
+  "/transaction/buy",
+  validateRequest(transactionSchema),
+  transactionTicket
+);
+globalroutes.get("/orders", getOrders);
+globalroutes.get("/orders/:id", getOrderDetail);
 
 export default globalroutes;
