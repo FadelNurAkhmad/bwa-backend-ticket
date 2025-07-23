@@ -5,6 +5,7 @@ import adminRoutes from "./routes/adminRoutes";
 import bodyParser from "body-parser";
 import authRoutes from "./routes/authRoutes";
 import customerRoutes from "./routes/customerRoutes";
+import cors from "cors";
 
 dotenv.config();
 
@@ -13,6 +14,7 @@ const port = process.env.PORT;
 
 // menggunakan middleware pakai app.use dan bersifat sinkronus
 app.use(bodyParser.json()); // <- parsing data dari API ke JSON
+app.use(cors());
 
 connectDB();
 
