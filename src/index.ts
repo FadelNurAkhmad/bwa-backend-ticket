@@ -15,6 +15,8 @@ const port = process.env.PORT;
 // menggunakan middleware pakai app.use dan bersifat sinkronus
 app.use(bodyParser.json()); // <- parsing data dari API ke JSON
 app.use(cors());
+app.use(express.static("public")); // Semua file yang berada di folder public/ akan tersedia di URL root (/) tanpa perlu membuat route khusus.
+// digunakan untuk menyajikan (serve) file statis seperti: Gambar (.jpg, .png, .svg)
 
 connectDB();
 

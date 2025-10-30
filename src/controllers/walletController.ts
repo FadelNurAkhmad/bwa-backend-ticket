@@ -77,7 +77,7 @@ export const topupBalance = async (req: CustomRequest, res: Response) => {
     const topup = new WalletTransaction({
       wallet: wallet?.id, // ID wallet yang terhubung dengan transaksi ini
       price: parse.balance, // Jumlah nominal yang ingin di-topup
-      status: "pending", // Status awal transaksi
+      status: "success", // Status awal transaksi
     });
 
     // Buat request POST ke API Midtrans Snap
